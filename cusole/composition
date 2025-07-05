@@ -1,0 +1,60 @@
+あなたは、FlutterとNestJSを使って、**位置情報ベースの最小構成SNSアプリ**を構築します。
+
+---
+🎯 **機能要件（MVP / 初期構成）**
+
+1. **ユーザー認証**
+   - Firebase Auth（匿名 or SNSログイン）
+   - トークンを取得し、NestJS に Bearer Token で渡す
+   - NestJS 側では Firebase Admin SDK を使ってトークンを検証し、ユーザー情報（uid, emailなど）を取得・保存
+
+2. **ポスト投稿機能**
+   - 投稿には以下の情報を含める：
+     - タイトル（text）
+     - 本文（text）
+     - 投稿したユーザーID
+     - 緯度（latitude）・経度（longitude）
+     - 作成日時
+   - Flutterで現在地取得（`geolocator`）し、フォームと一緒にAPIへPOST
+   - NestJS側ではPostgreSQL + Prismaを使って保存
+   - `location`カラムは `PostGIS` の `geometry(Point, 4326)` 型
+
+3. **投稿一覧（半径10m以内）**
+   - Flutter側で現在地を取得し、NestJS APIへ `/posts?lat=...&lng=...` の形式でGETリクエスト
+   - NestJSでは `ST_DWithin()` を使って、「10メートル以内」の投稿だけをDBから取得して返す
+
+     ```sql
+     SELECT * FROM posts
+     WHERE ST_DWithin(
+       location::geography,
+       ST_MakePoint(:lng, :lat)::geography,
+       10
+     );
+     ```
+
+---
+
+🧰 **使用技術スタック**
+
+| パーツ | 技術 |
+|--------|------|
+| フロントエンド | Flutter（Dart）, Riverpod, Dio, Geolocator |
+| バックエンド | NestJS（TypeScript）, Firebase Admin SDK, Prisma |
+| 認証 | Firebase Auth（トークンベース） |
+| データベース | PostgreSQL（+ PostGIS） |
+| API通信 | REST API（NestJSのController経由） |
+| ホスティング | Railway / Fly.io（NestJS）, Supabase / Neon（DB） |
+
+---
+
+📦 **データモデル例（Prisma）**
+
+```ts
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  body      String
+  userId    String
+  createdAt DateTime @default(now())
+  location  Unsupported("geometry(Point,4326)") // PostGIS対応
+}

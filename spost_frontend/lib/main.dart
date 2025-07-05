@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spost_frontend/app.dart';
+import 'package:spost_frontend/firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase初期化（設定オプション付き）
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(
+    const ProviderScope(
+      child: SpostApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spost_frontend/providers/auth_provider.dart';
+import 'package:spost_frontend/providers/posts_provider.dart';
+import 'package:spost_frontend/services/posts_service.dart';
 import 'package:spost_frontend/screens/login_screen.dart';
 import 'package:spost_frontend/screens/create_post_screen.dart';
 
@@ -12,7 +14,11 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).value;
 
     return Scaffold(
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(postsProvider);
+        },
+        child: CustomScrollView(
         slivers: [
           // モダンなAppBar
           SliverAppBar(
@@ -69,17 +75,110 @@ class HomeScreen extends ConsumerWidget {
           // 投稿一覧
           SliverPadding(
             padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  // 仮の投稿データ（後でAPIから取得）
-                  return _buildPostCard(context, index);
-                },
-                childCount: 5, // 仮の投稿数
-              ),
+            sliver: Consumer(
+              builder: (context, ref, child) {
+                final postsAsync = ref.watch(postsProvider);
+
+                return postsAsync.when(
+                  data: (posts) {
+                    if (posts.isEmpty) {
+                      return const SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.location_off,
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  '近くに投稿がありません',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '100m以内の投稿が表示されます',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return _buildPostCard(context, posts[index]);
+                        },
+                        childCount: posts.length,
+                      ),
+                    );
+                  },
+                  loading: () => const SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                  ),
+                  error: (error, stack) => SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'エラーが発生しました',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.red[700],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              error.toString(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                ref.invalidate(postsProvider);
+                              },
+                              child: const Text('再試行'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -109,7 +208,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPostCard(BuildContext context, int index) {
+  Widget _buildPostCard(BuildContext context, Post post) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -126,7 +225,7 @@ class HomeScreen extends ConsumerWidget {
                 CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   child: Text(
-                    'U${index + 1}',
+                    post.userId.substring(0, 2).toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -139,14 +238,14 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ユーザー${index + 1}',
+                        'ユーザー ${post.userId.substring(0, 8)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       Text(
-                        '${DateTime.now().subtract(Duration(hours: index + 1)).toString().substring(0, 16)}',
+                        _formatDateTime(post.createdAt),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -164,7 +263,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '投稿タイトル ${index + 1}',
+              post.title,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -172,7 +271,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'これは投稿${index + 1}の内容です。位置情報ベースのSNSで、近くの投稿を見ることができます。',
+              post.body,
               style: TextStyle(
                 color: Colors.grey[700],
                 fontSize: 14,
@@ -189,7 +288,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${(index + 1) * 3}',
+                  '0',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -203,7 +302,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${index + 1}',
+                  '0',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -215,5 +314,20 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}日前';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}時間前';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}分前';
+    } else {
+      return '今';
+    }
   }
 }

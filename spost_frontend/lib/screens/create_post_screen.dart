@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:spost_frontend/providers/post_provider.dart';
+import 'package:spost_frontend/providers/posts_provider.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -74,6 +75,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         longitude: _currentPosition!.longitude,
       );
       if (mounted) {
+        // 投稿一覧を更新
+        ref.invalidate(postsProvider);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('投稿が完了しました！')),
         );

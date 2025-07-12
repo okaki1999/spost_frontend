@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -5,17 +6,25 @@ class Post {
   final String id;
   final String title;
   final String body;
+  final String? imageUrl;
   final String userId;
   final DateTime createdAt;
   final String location;
+  final String? userName;
+  final String? userEmail;
+  final String? userAvatar;
 
   Post({
     required this.id,
     required this.title,
     required this.body,
+    this.imageUrl,
     required this.userId,
     required this.createdAt,
     required this.location,
+    this.userName,
+    this.userEmail,
+    this.userAvatar,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -23,9 +32,13 @@ class Post {
       id: json['id'],
       title: json['title'],
       body: json['body'],
+      imageUrl: json['imageUrl'],
       userId: json['userId'],
       createdAt: DateTime.parse(json['createdAt']),
       location: json['location'],
+      userName: json['userName'],
+      userEmail: json['userEmail'],
+      userAvatar: json['userAvatar'],
     );
   }
 }
@@ -53,8 +66,19 @@ class PostsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.map((json) => Post.fromJson(json)).toList();
+        // レスポンスが文字列の場合はJSONとして解析
+        final data = response.data;
+        List<dynamic> postsList;
+
+        if (data is String) {
+          postsList = jsonDecode(data) as List<dynamic>;
+        } else if (data is List) {
+          postsList = data;
+        } else {
+          throw Exception('Unexpected response format');
+        }
+
+        return postsList.map((json) => Post.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load posts');
       }

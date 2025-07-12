@@ -15,6 +15,7 @@ class PostService {
     required String body,
     required double latitude,
     required double longitude,
+    String? imageUrl,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('ログインが必要です');
@@ -27,6 +28,7 @@ class PostService {
         'body': body,
         'latitude': latitude,
         'longitude': longitude,
+        if (imageUrl != null) 'imageUrl': imageUrl,
       },
       options: Options(
         headers: {

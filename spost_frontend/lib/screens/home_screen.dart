@@ -26,27 +26,16 @@ class HomeScreen extends ConsumerWidget {
             expandedHeight: 120,
             floating: false,
             pinned: true,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.grey[100],
+            foregroundColor: Colors.black,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Spost',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
+              centerTitle: true,
+              title: Image.asset(
+                'assets/app_icon.png',
+                height: 54, // 1.5倍に拡大
               ),
               background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                    ],
-                  ),
-                ),
+                color: Colors.grey[100],
               ),
             ),
             actions: [
@@ -221,69 +210,93 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildPostCard(BuildContext context, Post post) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  backgroundImage: post.userAvatar != null
-                      ? NetworkImage('http://localhost:3000${post.userAvatar}')
-                      : null,
-                  child: post.userAvatar == null
-                      ? Text(
-                          post.userName?.substring(0, 1).toUpperCase() ??
-                          post.userId.substring(0, 2).toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.userName ??
-                        (post.userId.length > 8
-                            ? 'ユーザー ${post.userId.substring(0, 8)}'
-                            : 'ユーザー ${post.userId}'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: post.userAvatar != null
+                    ? NetworkImage('http://localhost:3000${post.userAvatar}')
+                    : null,
+                child: post.userAvatar == null
+                    ? Text(
+                        post.userName?.substring(0, 1).toUpperCase() ??
+                        post.userId.substring(0, 2).toUpperCase(),
                         style: const TextStyle(
+                          color: Colors.black87,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 22,
                         ),
-                      ),
-                      Text(
-                        _formatDateTime(post.createdAt),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          post.userName ??
+                              (post.userId.length > 8
+                                  ? 'ユーザー ${post.userId.substring(0, 8)}'
+                                  : 'ユーザー ${post.userId}'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.location_on,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 18,
+                        ),
+                        const Spacer(),
+                        Text(
+                          _formatDateTime(post.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    // if (post.userEmail != null)
+                    //   Text(
+                    //     post.userEmail!,
+                    //     style: TextStyle(
+                    //       color: Colors.grey[400],
+                    //       fontSize: 12,
+                    //     ),
+                    //   ),
+                  ],
                 ),
-                Icon(
-                  Icons.location_on,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (post.title.isNotEmpty)
             Text(
               post.title,
               style: const TextStyle(
@@ -291,76 +304,68 @@ class HomeScreen extends ConsumerWidget {
                 fontSize: 18,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              post.body,
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 14,
-                height: 1.4,
+          if (post.title.isNotEmpty) const SizedBox(height: 6),
+          Text(
+            post.body,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          if (post.imageUrl != null) ...[
+            const SizedBox(height: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                'http://localhost:3000${post.imageUrl}',
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: double.infinity,
+                    height: 220,
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            // 画像表示
-            if (post.imageUrl != null) ...[
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  'http://localhost:3000${post.imageUrl}',
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 64,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            // Row(
-            //   children: [
-            //     Icon(
-            //       Icons.favorite_border,
-            //       size: 20,
-            //       color: Colors.grey[600],
-            //     ),
-            //     const SizedBox(width: 4),
-            //     Text(
-            //       '0',
-            //       style: TextStyle(
-            //         color: Colors.grey[600],
-            //         fontSize: 12,
-            //       ),
-            //     ),
-            //     const SizedBox(width: 16),
-            //     Icon(
-            //       Icons.comment_outlined,
-            //       size: 20,
-            //       color: Colors.grey[600],
-            //     ),
-            //     const SizedBox(width: 4),
-            //     Text(
-            //       '0',
-            //       style: TextStyle(
-            //         color: Colors.grey[600],
-            //         fontSize: 12,
-            //       ),
-            //     ),
-            //   ],
-            // ),
           ],
-        ),
+          const SizedBox(height: 16),
+          // Row(
+          //   children: [
+          //     IconButton(
+          //       icon: const Icon(Icons.favorite_border, color: Colors.grey, size: 22),
+          //       onPressed: () {},
+          //       splashRadius: 20,
+          //     ),
+          //     const SizedBox(width: 2),
+          //     Text('0', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          //     const SizedBox(width: 18),
+          //     IconButton(
+          //       icon: const Icon(Icons.mode_comment_outlined, color: Colors.grey, size: 22),
+          //       onPressed: () {},
+          //       splashRadius: 20,
+          //     ),
+          //     const SizedBox(width: 2),
+          //     Text('0', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          //     const Spacer(),
+          //     IconButton(
+          //       icon: Icon(Icons.more_horiz, color: Colors.grey[500], size: 22),
+          //       onPressed: () {},
+          //       splashRadius: 20,
+          //     ),
+          //   ],
+          // ),
+        ],
       ),
     );
   }

@@ -14,21 +14,33 @@ class SpostApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Spost',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1), // Indigo
+        colorScheme: const ColorScheme(
           brightness: Brightness.light,
+          primary: Color(0xFF222222), // 濃いグレー
+          onPrimary: Colors.white,
+          secondary: Color(0xFF888888), // 中間グレー
+          onSecondary: Colors.white,
+          error: Colors.red,
+          onError: Colors.white,
+          background: Colors.white,
+          onBackground: Colors.black,
+          surface: Colors.white,
+          onSurface: Colors.black,
         ),
         useMaterial3: true,
         fontFamily: 'Inter',
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           elevation: 0,
           centerTitle: true,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.grey,
           foregroundColor: Colors.black87,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
+            backgroundColor: Color(0xFF222222),
+            foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -46,10 +58,10 @@ class SpostApp extends ConsumerWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+            borderSide: const BorderSide(color: Colors.grey, width: 2),
           ),
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: Colors.grey,
         ),
       ),
       home: authState.when(

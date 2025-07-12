@@ -51,13 +51,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(
-                            Icons.location_on,
-                            size: 40,
-                            color: Colors.white,
+                          child: Image.asset(
+                            'assets/app_icon.png',
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -66,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -161,9 +160,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ? 'アカウントをお持ちでない方はこちら'
                                 : 'すでにアカウントをお持ちの方はこちら',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: Colors.grey[700],
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        // ホームに戻るボタン
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.home, color: Colors.black54),
+                          label: const Text('ホームに戻る', style: TextStyle(color: Colors.black54)),
                         ),
                       ],
                     ),

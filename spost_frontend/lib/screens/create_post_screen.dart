@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:spost_frontend/providers/post_provider.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -64,9 +65,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: APIに投稿を送信
-      await Future.delayed(const Duration(seconds: 1)); // 仮の処理
-
+      // APIに投稿を送信
+      final postService = ref.read(postProvider);
+      await postService.createPost(
+        title: _titleController.text,
+        body: _contentController.text,
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('投稿が完了しました！')),

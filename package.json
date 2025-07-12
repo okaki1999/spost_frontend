@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@nestjs/platform-express": "^11.1.3",
+    "firebase-admin": "^13.4.0",
+    "multer": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/multer": "^2.0.0"
+  }
+}

@@ -5,6 +5,7 @@ import 'package:spost_frontend/providers/posts_provider.dart';
 import 'package:spost_frontend/services/posts_service.dart';
 import 'package:spost_frontend/screens/login_screen.dart';
 import 'package:spost_frontend/screens/create_post_screen.dart';
+import 'package:spost_frontend/screens/profile_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -49,15 +50,26 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             actions: [
-              if (user != null)
+              if (user != null) ...[
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.person),
+                ),
                 IconButton(
                   onPressed: () async {
                     final authService = ref.read(authServiceProvider);
                     await authService.signOut();
                   },
                   icon: const Icon(Icons.logout),
-                )
-              else
+                ),
+              ] else
                 IconButton(
                   onPressed: () {
                     Navigator.push(
@@ -223,14 +235,21 @@ class HomeScreen extends ConsumerWidget {
             Row(
               children: [
                 CircleAvatar(
+                  radius: 20,
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: Text(
-                    post.userId.substring(0, 2).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  backgroundImage: post.userAvatar != null
+                      ? NetworkImage('http://localhost:3000${post.userAvatar}')
+                      : null,
+                  child: post.userAvatar == null
+                      ? Text(
+                          post.userName?.substring(0, 1).toUpperCase() ??
+                          post.userId.substring(0, 2).toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -238,7 +257,10 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ユーザー ${post.userId.substring(0, 8)}',
+                        post.userName ??
+                        (post.userId.length > 8
+                            ? 'ユーザー ${post.userId.substring(0, 8)}'
+                            : 'ユーザー ${post.userId}'),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -278,38 +300,65 @@ class HomeScreen extends ConsumerWidget {
                 height: 1.4,
               ),
             ),
+            // 画像表示
+            if (post.imageUrl != null) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  'http://localhost:3000${post.imageUrl}',
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.favorite_border,
-                  size: 20,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '0',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Icon(
-                  Icons.comment_outlined,
-                  size: 20,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '0',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     Icon(
+            //       Icons.favorite_border,
+            //       size: 20,
+            //       color: Colors.grey[600],
+            //     ),
+            //     const SizedBox(width: 4),
+            //     Text(
+            //       '0',
+            //       style: TextStyle(
+            //         color: Colors.grey[600],
+            //         fontSize: 12,
+            //       ),
+            //     ),
+            //     const SizedBox(width: 16),
+            //     Icon(
+            //       Icons.comment_outlined,
+            //       size: 20,
+            //       color: Colors.grey[600],
+            //     ),
+            //     const SizedBox(width: 4),
+            //     Text(
+            //       '0',
+            //       style: TextStyle(
+            //         color: Colors.grey[600],
+            //         fontSize: 12,
+            //       ),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
